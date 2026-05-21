@@ -1,0 +1,49 @@
+# Workspace ignores
+.vscode/
+.idea/
+*.iml
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Node
+node_modules/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary
+*.tmp
+*.bak
+*.swp
+
+# Excel / Planilhas e arquivos gerados
+Matriz de Complexidade MIT e Service Flow.xlsx
+*.xlsx
+
+# Regras e scripts locais
+regras.txt
+*.gs
+appsscript.json
+
+# Environment
+.env
+.env.*
+
+# Workspace storage
+.copilot/
+workspaceStorage/
+
+# Build / dist
+dist/
+build/
+
+# Others
+*.sublime-project
+*.sublime-workspace

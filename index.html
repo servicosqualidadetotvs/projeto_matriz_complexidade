@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Matriz de Complexidade MIT e Service Flow</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Matriz de Complexidade MIT e Service Flow</h1>
+      <p>Preencha os dados do projeto e gere a lista de artefatos/templates aplicáveis.</p>
+    </header>
+
+    <section class="card">
+      <h2>Entradas</h2>
+      <form id="matrizForm">
+        <div class="grid">
+          <label class="field">
+            <span>Tipo de Serviço</span>
+            <select id="tipoServico" name="tipoServico" required>
+              <option value="">-- Selecione --</option>
+              <option value="Implantação Tradicional">Implantação Tradicional</option>
+              <option value="Rollout">Rollout</option>
+              <option value="Upgrade de Release">Upgrade de Release</option>
+              <option value="Customização">Customização</option>
+              <option value="Serviços Recorrente">Serviços Recorrente</option>
+            </select>
+          </label>
+
+          <label class="field" id="horasGroup" hidden>
+            <span>Quantidade de Horas</span>
+            <select id="horas" name="horas">
+              <option value="">-- Selecione --</option>
+              <option value="Mais de 1000">Mais de 1000</option>
+              <option value="De 200 a 1000">De 200 a 1000</option>
+              <option value="Menos de 200">Menos de 200</option>
+            </select>
+          </label>
+
+          <fieldset class="field checkbox-group" id="gestaoGroup">
+            <legend>Possui Gestão?</legend>
+            <label><input type="radio" name="possuiGestao" value="Sim" checked /> Sim</label>
+            <label><input type="radio" name="possuiGestao" value="Não" /> Não</label>
+          </fieldset>
+
+          <fieldset class="field checkbox-group">
+            <legend>Modificadores de Complexidade</legend>
+            <label><input type="checkbox" id="possuiIntegracao" /> Possui Integração?</label>
+            <label><input type="checkbox" id="possuiLegado" /> Possui Sistema Legado?</label>
+            <label><input type="checkbox" id="possuiCustomizacao" /> Possui Customização?</label>
+          </fieldset>
+        </div>
+
+        <div class="actions">
+          <button type="button" id="generateButton">Gerar Matriz</button>
+          <button type="button" id="resetButton" class="secondary">Limpar</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="card">
+      <h2>Resultado</h2>
+      <div id="resultInfo" class="info"></div>
+      <div id="resultArea"></div>
+    </section>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
