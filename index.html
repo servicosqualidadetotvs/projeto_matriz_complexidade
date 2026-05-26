@@ -63,10 +63,16 @@
     <section class="card">
       <h2>Resultado</h2>
       <div id="resultInfo" class="info"></div>
+      <div id="exportActions" class="actions export-actions hidden">
+        <button type="button" id="exportPngButton" disabled>Exportar como PNG</button>
+        <button type="button" id="exportPdfButton" disabled>Exportar como PDF</button>
+      </div>
       <div id="resultArea"></div>
     </section>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

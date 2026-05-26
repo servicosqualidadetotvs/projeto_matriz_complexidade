@@ -92,6 +92,12 @@ select {
   margin-top: 18px;
 }
 
+.export-actions {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
 button {
   border: none;
   border-radius: 10px;

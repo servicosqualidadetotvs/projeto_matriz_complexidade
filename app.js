@@ -8,8 +8,17 @@ const possuiLegado = document.getElementById('possuiLegado');
 const possuiCustomizacao = document.getElementById('possuiCustomizacao');
 const generateButton = document.getElementById('generateButton');
 const resetButton = document.getElementById('resetButton');
+const exportPngButton = document.getElementById('exportPngButton');
+const exportPdfButton = document.getElementById('exportPdfButton');
+const exportActions = document.getElementById('exportActions');
 const resultArea = document.getElementById('resultArea');
 const resultInfo = document.getElementById('resultInfo');
+
+function setExportButtonsEnabled(enabled) {
+  exportPngButton.disabled = !enabled;
+  exportPdfButton.disabled = !enabled;
+  exportActions.classList.toggle('hidden', !enabled);
+}
 
 const templates = [
   { phase: 'Preparação', code: 'MIT065', name: 'Transição Comercial', acceptance: 'Assinatura (Física/Dig.)', required: 'Não', note: 'Melhor Prática', A: 'X', B: 'X', C: 'X', D: 'X', E: 'X', F: null, G: null, H: null },
@@ -127,6 +136,74 @@ function generateMatriz() {
   renderResult(selected, profile);
 }
 
+async function exportAsPng() {
+  if (!resultArea.innerHTML.trim()) {
+    renderMessage('Gere a matriz antes de tentar exportar.');
+    return;
+  }
+
+  try {
+    const html2canvasFn = window.html2canvas;
+    if (!html2canvasFn) {
+      renderMessage('Biblioteca html2canvas não foi carregada.');
+      return;
+    }
+
+    const canvas = await html2canvasFn(resultArea, {
+      backgroundColor: '#ffffff',
+      scale: 2
+    });
+    const link = document.createElement('a');
+    link.download = 'matriz-de-complexidade.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  } catch (error) {
+    renderMessage('Erro ao gerar PNG: ' + (error.message || error));
+    console.error(error);
+  }
+}
+
+async function exportAsPdf() {
+  if (!resultArea.innerHTML.trim()) {
+    renderMessage('Gere a matriz antes de tentar exportar.');
+    return;
+  }
+
+  try {
+    const html2canvasFn = window.html2canvas;
+    if (!html2canvasFn) {
+      renderMessage('Biblioteca html2canvas não foi carregada.');
+      return;
+    }
+
+    const canvas = await html2canvasFn(resultArea, {
+      backgroundColor: '#ffffff',
+      scale: 2
+    });
+
+    const imgData = canvas.toDataURL('image/png');
+    const jsPDFConstructor = window.jspdf?.jsPDF || window.jspdf || window.jsPDF;
+    if (!jsPDFConstructor) {
+      renderMessage('Biblioteca jsPDF não está disponível para exportação.');
+      return;
+    }
+
+    const pdf = new jsPDFConstructor({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const ratio = Math.min(pageWidth / canvas.width, pageHeight / canvas.height);
+    const imgWidth = canvas.width * ratio;
+    const imgHeight = canvas.height * ratio;
+    const marginX = (pageWidth - imgWidth) / 2;
+    const marginY = (pageHeight - imgHeight) / 2;
+    pdf.addImage(imgData, 'PNG', marginX, marginY, imgWidth, imgHeight);
+    pdf.save('matriz-de-complexidade.pdf');
+  } catch (error) {
+    renderMessage('Erro ao gerar PDF: ' + (error.message || error));
+    console.error(error);
+  }
+}
+
 function includeTemplate(resultList, code) {
   const exists = resultList.some(item => item.code === code && item.name);
   if (!exists) {
@@ -145,9 +222,11 @@ function renderResult(resultList, profile) {
 
   if (resultList.length === 0) {
     renderMessage('Nenhum documento aplicável.');
+    setExportButtonsEnabled(false);
     return;
   }
 
+  setExportButtonsEnabled(true);
   const rows = resultList
     .sort((a, b) => {
       const order = {
@@ -207,19 +286,22 @@ function resetForm() {
   possuiLegado.checked = false;
   possuiCustomizacao.checked = false;
   updateVisibility();
+  setExportButtonsEnabled(false);
 }
 
 tipoServico.addEventListener('change', updateVisibility);
 generateButton.addEventListener('click', generateMatriz);
 resetButton.addEventListener('click', resetForm);
+exportPngButton.addEventListener('click', exportAsPng);
+exportPdfButton.addEventListener('click', exportAsPdf);
 
-document.addEventListener('DOMContentLoaded', () => {
+const initializePage = () => {
   updateVisibility();
-});
+  setExportButtonsEnabled(false);
+};
 
-// Inicia o estado correto se o DOM já está pronto
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', updateVisibility);
-} else {
-  updateVisibility();
+document.addEventListener('DOMContentLoaded', initializePage);
+
+if (document.readyState !== 'loading') {
+  initializePage();
 }
