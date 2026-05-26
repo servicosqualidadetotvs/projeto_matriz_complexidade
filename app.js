@@ -58,8 +58,23 @@ const profileColumnKey = {
 
 function updateVisibility() {
   const serviceType = tipoServico.value;
-  horasGroup.hidden = serviceType !== 'Implantação Tradicional';
-  gestaoGroup.hidden = serviceType !== 'Serviços Recorrente';
+
+  if (serviceType === 'Implantação Tradicional') {
+    horasGroup.classList.remove('hidden');
+    horasGroup.hidden = false;
+  } else {
+    horasGroup.classList.add('hidden');
+    horasGroup.hidden = true;
+    horas.value = '';
+  }
+
+  if (serviceType === 'Serviços Recorrente') {
+    gestaoGroup.classList.remove('hidden');
+    gestaoGroup.hidden = false;
+  } else {
+    gestaoGroup.classList.add('hidden');
+    gestaoGroup.hidden = true;
+  }
 }
 
 function mapProfile(values) {
@@ -150,8 +165,12 @@ function renderResult(resultList, profile) {
     })
     .map(template => {
       const note = template.note == null ? '' : template.note;
+      let rowClass = '';
+      if (template.required === 'Sim') rowClass = 'required-sim';
+      else if (template.required === 'Sim*') rowClass = 'required-sim-asterisco';
+      else if (template.required === 'Não') rowClass = 'required-nao';
       return `
-      <tr>
+      <tr class="${rowClass}">
         <td>${template.phase}</td>
         <td>${template.code}</td>
         <td>${template.name}</td>
@@ -184,6 +203,9 @@ function resetForm() {
   form.reset();
   resultInfo.innerHTML = '';
   resultArea.innerHTML = '';
+  possuiIntegracao.checked = false;
+  possuiLegado.checked = false;
+  possuiCustomizacao.checked = false;
   updateVisibility();
 }
 
@@ -191,4 +213,13 @@ tipoServico.addEventListener('change', updateVisibility);
 generateButton.addEventListener('click', generateMatriz);
 resetButton.addEventListener('click', resetForm);
 
-updateVisibility();
+document.addEventListener('DOMContentLoaded', () => {
+  updateVisibility();
+});
+
+// Inicia o estado correto se o DOM já está pronto
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', updateVisibility);
+} else {
+  updateVisibility();
+}
