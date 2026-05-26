@@ -54,6 +54,28 @@ const templates = [
   { phase: 'N/A', code: 'MSF006', name: 'Boas Vindas - email', acceptance: 'Envio por e-mail', required: 'Não', note: null, A: null, B: null, C: null, D: null, E: null, F: null, G: 'X', H: 'X' }
 ];
 
+const templateLinks = {
+  'MIT013': 'https://docs.google.com/spreadsheets/d/1X-b-NeCWBMJs5NCI3xnpqb0qp0J988QZSCP-iTocHWc/copy',
+  'MIT065': 'https://docs.google.com/spreadsheets/d/1fzjtCx9Iv3IioiDqPsLfl85AiMDcYSrZr5PJByDvjYw/copy',
+  'MIT021': 'https://docs.google.com/document/d/1w6MLAmDR0wO0V_InLfwTjeKgMbDhiYp4XpEIryBwz0k/copy',
+  'MIT024': 'https://docs.google.com/presentation/d/1AOZBj2Gw1swncW6IWJMc-Dij8FaLfzC7WwSunW9dRQc/copy',
+  'MIT030': 'https://docs.google.com/document/d/1xiZ7iJBsYti5oLtNV-lA1P7Ew-zUuOPHZJuQF5iQNqM/copy',
+  'MIT032': 'https://drive.google.com/file/d/1WMWaAjgzoSAL5uurq7ZR6_LDBh22Qv6L/view?usp=sharing',
+  'MIT005': 'https://docs.google.com/document/d/1OBLItP969bwSDD6BiFvXkQZfSqHGbQm3jCDwdpKLHjQ/copy',
+  'MIT008 / 007': 'https://docs.google.com/presentation/d/1y-Hk9C25V1g-_r9eEfFmmh2jYNkNHdHgFg_zbXnYyoA/copy',
+  'MIT006': 'https://docs.google.com/spreadsheets/d/129SS_U2uvyOiqG0q3r_0QUwPjYiC82sBL2L6OcgDRDE/copy',
+  'MIT010': 'https://docs.google.com/document/d/1HAMy3d3azSP1EJx1XhYsNd-_rSrZ2k3VAjv9Fm6Lnxo/copy',
+  'MIT031': 'https://docs.google.com/document/d/1YsIei5gGQ_yEtLH1d4yuIi5HWz2bxyEFiGtCFIA0c4/copy',
+  'MIT062': 'https://docs.google.com/document/d/1EDDMgOx5BAfTplsAMXPoJ3OReNNku--pDWTP89ODZoA/copy',
+  'MIT043': 'https://docs.google.com/document/d/1KXUlYLb0Hmd2zduoAlpkMPdCmiyiY8qWTND_y3gOx4o/copy',
+  'MIT044': 'https://docs.google.com/document/d/1kBLTabtNTVE-NPFnyENTMxVn__EXuWkoh-1Qc_phmIQ/copy',
+  'MIT045': 'https://docs.google.com/spreadsheets/d/17PaWk6QYnX135L8pSqGw_KahFiyltjXZunMMK22mlU8/copy',
+  'MIT053': 'https://docs.google.com/spreadsheets/d/1tNI9F1pHq6p3y-vkHHC1woFwxkqCZz4XWUQUhtCUrc8/copy',
+  'MIT055': 'https://docs.google.com/spreadsheets/d/1GTQzKjCIw1nwGt6HJSby3GYEfg-TwLeG45xezxelLhU/copy',
+  'MIT054': 'https://docs.google.com/spreadsheets/d/1xyakTWIlSvAtqMDMDuOhE_U1DNoh4FlS-qHR9c_21VQ/copy',
+  'MIT041': 'https://docs.google.com/document/d/1WJURsOWgPNbmWBgj1KsTKMEZQSp16k6UOjKsXlYAu18/copy'
+};
+
 const profileColumnKey = {
   A: 'A',
   B: 'B',
@@ -252,7 +274,7 @@ function renderResult(resultList, profile) {
       <tr class="${rowClass}">
         <td>${template.phase}</td>
         <td>${template.code}</td>
-        <td>${template.name}</td>
+        <td>${templateLinks[template.code] ? `<a href="${templateLinks[template.code]}" target="_blank" rel="noopener noreferrer">${template.name}</a>` : template.name}</td>
         <td>${template.acceptance}</td>
         <td>${template.required}</td>
         <td>${note}</td>
