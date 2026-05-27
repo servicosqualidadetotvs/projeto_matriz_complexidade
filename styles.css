@@ -1,17 +1,28 @@
 :root {
-  /* Paleta inspirada no Design System da TOTVS (PO UI) */
-  --totvs-primary: #0C9ABE;
-  --totvs-primary-hover: #097B98;
-  --totvs-dark: #00133F;
-  --totvs-text-main: #3A454C;
-  --totvs-text-muted: #8A96A0;
-  --totvs-bg: #F3F5F7;
-  --totvs-surface: #FFFFFF;
-  --totvs-border: #D7DBE1;
-  --totvs-border-light: #EDEFF2;
-  --totvs-focus: rgba(12, 154, 190, 0.25);
+  /* Variáveis baseadas estritamente no style.css do portal */
+  --primary-blue: #002d5b;
+  --bg-light: #f4f7f9;
+  --white: #ffffff;
+  --text-main: #333333;
+  --bg-dark: #1a1a1a;
+  --text-dark: #e0e0e0;
+  --card-bg-dark: #2a2a2a;
+  --border-dark: #444444;
+
+  /* Mapeamento para as classes funcionais do seu sistema */
+  --totvs-primary: var(--primary-blue);
+  --totvs-primary-hover: #144a84;
+  --totvs-dark: #1f2c42;
+  --totvs-text-main: var(--text-main);
+  --totvs-text-muted: #888888;
+  --totvs-text-p: #414141;
+  --totvs-bg: var(--bg-light);
+  --totvs-surface: var(--white);
+  --totvs-border: #eeeeee;
+  --totvs-border-light: rgba(0, 0, 0, 0.04);
+  --totvs-focus: rgba(0, 45, 91, 0.25);
   
-  /* Status Colors */
+  /* Status Colors (Mantidas para funcionalidade) */
   --totvs-success-bg: #E7F6ED;
   --totvs-success-text: #008744;
   --totvs-warning-bg: #FFF6E5;
@@ -19,8 +30,29 @@
   --totvs-danger-bg: #FBEDED;
   --totvs-danger-text: #C62828;
 
-  --radius-card: 8px;
-  --radius-input: 4px;
+  --radius-card: 18px; /* Correspondente à .section-area */
+  --radius-input: 8px;
+}
+
+body.dark {
+  --totvs-primary: #5f8ed1;
+  --totvs-primary-hover: #a3c2ff;
+  --totvs-dark: var(--white);
+  --totvs-text-main: var(--text-dark);
+  --totvs-text-muted: #aaaaaa;
+  --totvs-text-p: var(--text-dark);
+  --totvs-bg: var(--bg-dark);
+  --totvs-surface: var(--card-bg-dark);
+  --totvs-border: var(--border-dark);
+  --totvs-border-light: rgba(255, 255, 255, 0.05);
+  --totvs-focus: rgba(95, 142, 209, 0.4);
+
+  --totvs-success-bg: rgba(0, 135, 68, 0.2);
+  --totvs-success-text: #4caf50;
+  --totvs-warning-bg: rgba(178, 115, 0, 0.2);
+  --totvs-warning-text: #ffb300;
+  --totvs-danger-bg: rgba(198, 40, 40, 0.2);
+  --totvs-danger-text: #ef5350;
 }
 
 body {
@@ -28,9 +60,11 @@ body {
   min-height: 100vh;
   background-color: var(--totvs-bg);
   color: var(--totvs-text-main);
-  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  font-size: 14px;
-  line-height: 1.5;
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 16px;
+  line-height: 1.75;
+  letter-spacing: 0.01em;
+  transition: background-color 0.3s, color 0.3s;
 }
 
 * {
@@ -38,51 +72,49 @@ body {
 }
 
 .container {
-  max-width: 1040px;
+  max-width: 1100px; /* Igual ao portal */
   margin: 0 auto;
-  padding: 32px 24px;
+  padding: 40px 20px;
 }
 
 header {
-  margin-bottom: 32px;
+  margin-bottom: 40px;
   text-align: left;
-  border-bottom: 2px solid var(--totvs-primary);
-  padding-bottom: 16px;
+  border-bottom: 2px solid var(--totvs-border-light);
+  padding-bottom: 20px;
 }
 
 h1 {
-  margin: 0 0 8px;
-  color: var(--totvs-dark);
-  font-size: 24px;
+  margin: 0 0 10px;
+  color: var(--totvs-primary);
+  font-size: 38px;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
   font-weight: 700;
-  letter-spacing: -0.5px;
 }
 
 h2 {
-  margin: 0 0 20px;
-  color: var(--totvs-dark);
-  font-size: 18px;
+  font-size: 22px;
+  margin: 0 0 22px;
   font-weight: 600;
+  color: var(--totvs-primary);
 }
 
 p {
-  margin: 0;
-  color: var(--totvs-text-muted);
-  font-size: 14px;
+  margin: 0 0 1.35em;
+  color: var(--totvs-text-p);
+  font-size: 16px;
 }
 
+/* Espelhamento exato da .section-area do portal */
 .card {
   background: var(--totvs-surface);
-  border: 1px solid var(--totvs-border);
+  border: 1px solid var(--totvs-border-light);
   border-radius: var(--radius-card);
-  padding: 28px;
+  padding: 40px;
   margin-bottom: 24px;
-  box-shadow: 0 2px 4px rgba(0, 19, 63, 0.02);
-  transition: box-shadow 0.2s ease;
-}
-
-.card:hover {
-  box-shadow: 0 4px 12px rgba(0, 19, 63, 0.05);
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.06);
+  transition: background-color 0.3s, border-color 0.3s, color 0.3s;
 }
 
 .grid {
@@ -100,7 +132,7 @@ p {
 fieldset legend {
   font-weight: 600;
   color: var(--totvs-text-main);
-  font-size: 13px;
+  font-size: 15px;
 }
 
 fieldset {
@@ -120,12 +152,18 @@ select,
 input[type="number"],
 input[type="file"] {
   width: 100%;
-  border: 1px solid var(--totvs-border);
+  border: 1px solid rgba(0, 45, 91, 0.12); /* Cor da borda baseada no .link-card */
   border-radius: var(--radius-input);
-  padding: 10px 12px;
+  padding: 12px 16px;
   background: var(--totvs-surface);
   color: var(--totvs-text-main);
   transition: all 0.2s ease;
+}
+
+body.dark select,
+body.dark input[type="number"],
+body.dark input[type="file"] {
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
 select:focus,
@@ -140,26 +178,33 @@ input[readonly] {
   background-color: var(--totvs-bg);
   color: var(--totvs-text-muted);
   cursor: not-allowed;
+  border-color: var(--totvs-border-light);
 }
 
+/* Checkboxes seguindo a estética do .link-card */
 .checkbox-group {
-  border: 1px solid var(--totvs-border-light);
-  border-radius: var(--radius-input);
-  padding: 12px 16px;
-  background-color: #FAFAFB;
+  border: 1px solid rgba(0, 45, 91, 0.12);
+  border-radius: 14px;
+  padding: 20px;
+  background-color: rgba(255, 255, 255, 0.98);
+}
+
+body.dark .checkbox-group {
+  background-color: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
 .checkbox-group legend {
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
 .checkbox-group label {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   align-items: center;
-  margin-bottom: 8px;
-  color: var(--totvs-text-main);
-  font-size: 14px;
+  margin-bottom: 12px;
+  color: var(--totvs-text-p);
+  font-size: 16px;
   cursor: pointer;
 }
 
@@ -170,16 +215,16 @@ input[readonly] {
 input[type="checkbox"],
 input[type="radio"] {
   accent-color: var(--totvs-primary);
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   cursor: pointer;
 }
 
 .actions {
   display: flex;
   gap: 12px;
-  margin-top: 24px;
-  padding-top: 24px;
+  margin-top: 32px;
+  padding-top: 32px;
   border-top: 1px solid var(--totvs-border-light);
 }
 
@@ -191,71 +236,78 @@ input[type="radio"] {
   border-top: none;
 }
 
+/* Botões alinhados com .btn-close-footer */
 button {
   border: 1px solid transparent;
-  border-radius: var(--radius-input);
+  border-radius: 6px;
   padding: 10px 20px;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 16px;
   cursor: pointer;
-  color: var(--totvs-surface);
+  color: #ffffff;
   background: var(--totvs-primary);
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
 }
 
 button:hover:not(:disabled) {
-  background: var(--totvs-primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 45, 91, 0.15);
 }
 
 button:disabled {
   background: var(--totvs-border);
+  color: var(--totvs-text-muted);
   cursor: not-allowed;
   opacity: 0.7;
+  transform: none;
+  box-shadow: none;
 }
 
 button.secondary {
   background: transparent;
+  color: var(--totvs-primary);
+  border-color: rgba(0, 45, 91, 0.25);
+}
+
+body.dark button.secondary {
   color: var(--totvs-text-main);
   border-color: var(--totvs-border);
 }
 
-button.secondary:hover {
+button.secondary:hover:not(:disabled) {
   background: var(--totvs-bg);
-  border-color: var(--totvs-text-muted);
 }
 
 [hidden], .hidden {
   display: none !important;
 }
 
-/* Tabelas Minimalistas */
+/* Tabelas */
 table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 16px;
-  font-size: 13px;
+  font-size: 15px;
 }
 
 th,
 td {
   border-bottom: 1px solid var(--totvs-border-light);
-  padding: 12px 16px;
+  padding: 16px 18px;
   text-align: left;
 }
 
 th {
   background: var(--totvs-bg);
-  color: var(--totvs-text-muted);
+  color: var(--totvs-primary);
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-size: 12px;
-  border-top: 1px solid var(--totvs-border);
-  border-bottom: 2px solid var(--totvs-border);
+  font-size: 14px;
+  border-top: 1px solid var(--totvs-border-light);
+  border-bottom: 2px solid var(--totvs-border-light);
 }
 
 tr:hover td {
-  background-color: #FAFAFB;
+  background-color: var(--totvs-bg);
 }
 
 .required-sim td:nth-child(5) {
@@ -277,17 +329,24 @@ tr:hover td {
 }
 
 .info {
-  color: var(--totvs-text-main);
-  margin-bottom: 16px;
+  color: var(--totvs-text-p);
+  margin-bottom: 20px;
 }
 
+/* Match exato com blockquote do style.css original */
 .message {
-  background: var(--totvs-warning-bg);
-  border-left: 4px solid var(--totvs-warning-text);
-  color: var(--totvs-warning-text);
-  padding: 12px 16px;
-  border-radius: 0 var(--radius-input) var(--radius-input) 0;
-  font-size: 14px;
+  background-color: #f3f7fb;
+  border-left: 4px solid var(--primary-blue);
+  padding: 22px 24px;
+  color: #2b3b52;
+  border-radius: 0 8px 8px 0;
+  font-size: 16px;
+}
+
+body.dark .message {
+  background-color: rgba(255,255,255,0.05);
+  border-left-color: #5f8ed1;
+  color: #d5e4ff;
 }
 
 @media (min-width: 720px) {
@@ -307,7 +366,7 @@ tr:hover td {
 
 .file-upload-group {
   display: flex;
-  gap: 12px;
+  gap: 16px;
   align-items: flex-end;
 }
 
@@ -317,14 +376,14 @@ tr:hover td {
 }
 
 .extracted-data {
-  margin-top: 24px;
-  padding: 20px;
+  margin-top: 32px;
+  padding: 24px;
   background: var(--totvs-bg);
-  border: 1px dashed var(--totvs-border);
-  border-radius: var(--radius-card);
+  border: 1px dashed var(--totvs-border-dark);
+  border-radius: 12px;
 }
 
-/* Scorecard de Complexidade - Estilo Corporativo */
+/* Scorecard de Complexidade - Adaptado com visual .guide-section */
 .complexity-scorecard {
   max-width: 100%;
   margin: 0;
@@ -333,16 +392,16 @@ tr:hover td {
 }
 
 .complexity-scorecard h2 {
-  font-size: 20px;
+  font-size: 28px;
   text-align: left;
-  margin: 0 0 8px;
-  color: var(--totvs-dark);
+  margin: 0 0 10px;
+  color: var(--totvs-primary);
 }
 
 .complexity-scorecard .evaluator {
   text-align: left;
   color: var(--totvs-text-muted);
-  font-size: 13px;
+  font-size: 15px;
   margin: 0 0 24px;
 }
 
@@ -351,15 +410,28 @@ tr:hover td {
   align-items: center;
   justify-content: space-between;
   padding: 24px;
-  background: var(--totvs-surface);
-  border: 1px solid var(--totvs-border);
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid rgba(0, 45, 91, 0.08);
   border-left: 4px solid var(--totvs-primary);
-  border-radius: var(--radius-card);
+  border-radius: 12px;
   margin-bottom: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+body.dark .complexity-level {
+  background: var(--totvs-surface);
+  border-color: var(--totvs-border);
+  border-left-color: var(--totvs-primary);
+}
+
+.complexity-level:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
 }
 
 .complexity-level .level-label {
-  font-size: 12px;
+  font-size: 14px;
   letter-spacing: 1px;
   color: var(--totvs-text-muted);
   text-transform: uppercase;
@@ -368,7 +440,7 @@ tr:hover td {
 }
 
 .complexity-level .level-badge {
-  font-size: 28px;
+  font-size: 32px;
   font-weight: 700;
   margin: 0;
   text-transform: uppercase;
@@ -377,19 +449,19 @@ tr:hover td {
 .complexity-level .level-badge.baixa { color: var(--totvs-success-text); }
 .complexity-level .level-badge.média { color: var(--totvs-warning-text); }
 .complexity-level .level-badge.alta { color: var(--totvs-danger-text); }
-.complexity-level .level-badge.extrema { color: var(--totvs-dark); }
+.complexity-level .level-badge.extrema { color: var(--totvs-text-main); }
 
 .complexity-scorecard .total-score {
   text-align: right;
-  font-size: 14px;
+  font-size: 16px;
   color: var(--totvs-text-muted);
 }
 
 .complexity-scorecard .total-score strong {
-  color: var(--totvs-dark);
-  font-size: 24px;
+  color: var(--totvs-text-main);
+  font-size: 32px;
   display: block;
-  line-height: 1;
+  line-height: 1.1;
   margin-top: 4px;
 }
 
@@ -398,40 +470,47 @@ tr:hover td {
 }
 
 .sections {
-  margin-top: 32px;
+  margin-top: 40px;
 }
 
+/* Sections parecidas com as Guide Sections do PMO AR */
 .section {
-  margin-bottom: 16px;
-  border: 1px solid var(--totvs-border);
-  border-radius: var(--radius-card);
+  margin-bottom: 20px;
+  background: rgba(255, 255, 255, 0.98);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 45, 91, 0.08);
+  overflow: hidden;
+}
+
+body.dark .section {
   background: var(--totvs-surface);
+  border-color: var(--totvs-border);
 }
 
 .section-header {
   background: var(--totvs-bg);
-  padding: 12px 16px;
+  padding: 16px 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid var(--totvs-border);
-  border-radius: var(--radius-card) var(--radius-card) 0 0;
+  border-bottom: 1px solid var(--totvs-border-light);
 }
 
 .section-header h3 {
   margin: 0;
-  font-size: 14px;
-  color: var(--totvs-text-main);
-  font-weight: 600;
+  font-size: 18px;
+  color: var(--totvs-primary);
+  font-weight: 700;
 }
 
 .section-points {
   background: var(--totvs-surface);
   color: var(--totvs-primary);
   border: 1px solid var(--totvs-primary);
-  padding: 2px 10px;
+  padding: 4px 12px;
   border-radius: 12px;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
 }
 
@@ -440,7 +519,7 @@ tr:hover td {
 }
 
 .item {
-  padding: 16px;
+  padding: 20px 24px;
   border-bottom: 1px solid var(--totvs-border-light);
 }
 
@@ -451,50 +530,50 @@ tr:hover td {
 .item-label {
   font-weight: 600;
   color: var(--totvs-text-main);
-  margin-bottom: 4px;
-  font-size: 14px;
+  margin-bottom: 6px;
+  font-size: 16px;
 }
 
 .item-description {
-  color: var(--totvs-text-muted);
-  font-size: 13px;
-  margin-bottom: 12px;
+  color: var(--totvs-text-p);
+  font-size: 15px;
+  margin-bottom: 14px;
 }
 
 .item-footer {
   display: flex;
   gap: 12px;
   align-items: center;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .calculation {
   color: var(--totvs-text-muted);
   font-family: monospace;
   background: var(--totvs-bg);
-  padding: 2px 6px;
+  padding: 4px 8px;
   border-radius: 4px;
 }
 
 .level {
   font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 4px;
+  padding: 4px 10px;
+  border-radius: 6px;
   text-transform: uppercase;
 }
 
 .level.baixo { background: var(--totvs-success-bg); color: var(--totvs-success-text); }
 .level.médio { background: var(--totvs-warning-bg); color: var(--totvs-warning-text); }
 .level.alto { background: var(--totvs-danger-bg); color: var(--totvs-danger-text); }
-.level.extremo { background: var(--totvs-border); color: var(--totvs-dark); }
+.level.extremo { background: var(--totvs-border-light); color: var(--totvs-text-main); }
 
 .score {
   background: var(--totvs-bg);
   color: var(--totvs-text-main);
-  border: 1px solid var(--totvs-border);
-  padding: 2px 8px;
-  border-radius: 4px;
+  border: 1px solid var(--totvs-border-light);
+  padding: 4px 10px;
+  border-radius: 6px;
   font-weight: 600;
-  min-width: 30px;
+  min-width: 32px;
   text-align: center;
 }
