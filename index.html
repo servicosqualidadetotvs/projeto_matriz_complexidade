@@ -14,6 +14,25 @@
     </header>
 
     <section class="card">
+      <h2>Upload de Documento de Complexidade</h2>
+      <div class="field">
+        <span>Existe Matriz de Complexidade EV?</span>
+        <fieldset class="checkbox-group" id="evMatrixQuestion">
+          <label><input type="radio" name="existsEvMatrix" value="Sim" /> Sim</label>
+          <label><input type="radio" name="existsEvMatrix" value="Não" checked /> Não</label>
+        </fieldset>
+      </div>
+      <div class="file-upload-group hidden" id="evUploadSection">
+        <label class="field">
+          <span>Selecione um arquivo PDF</span>
+          <input type="file" id="fileUpload" accept=".pdf" />
+        </label>
+        <button type="button" id="extractButton">Extrair Dados</button>
+      </div>
+      <div id="extractedData" class="extracted-data hidden"></div>
+    </section>
+
+    <section class="card">
       <h2>Entradas</h2>
       <form id="matrizForm">
         <div class="grid">
@@ -45,6 +64,21 @@
             <label><input type="radio" name="possuiGestao" value="Não" /> Não</label>
           </fieldset>
 
+          <label class="field">
+            <span>Grau de Customização</span>
+            <input type="number" id="customizacaoValue" readonly />
+          </label>
+
+          <label class="field">
+            <span>Número de Sistemas Integrados</span>
+            <input type="number" id="integradosValue" readonly />
+          </label>
+
+          <label class="field">
+            <span>Migração de Dados (Volume/Qualidade)</span>
+            <input type="number" id="migracaoValue" readonly />
+          </label>
+
           <fieldset class="field checkbox-group">
             <legend>Modificadores de Complexidade</legend>
             <label><input type="checkbox" id="possuiIntegracao" /> Possui Integração?</label>
@@ -71,6 +105,7 @@
     </section>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
   <script src="app.js"></script>

@@ -13,6 +13,14 @@ const exportPdfButton = document.getElementById('exportPdfButton');
 const exportActions = document.getElementById('exportActions');
 const resultArea = document.getElementById('resultArea');
 const resultInfo = document.getElementById('resultInfo');
+const fileUpload = document.getElementById('fileUpload');
+const extractButton = document.getElementById('extractButton');
+const extractedData = document.getElementById('extractedData');
+const evUploadSection = document.getElementById('evUploadSection');
+const existsEvMatrixRadios = Array.from(document.getElementsByName('existsEvMatrix'));
+const customizacaoValue = document.getElementById('customizacaoValue');
+const integradosValue = document.getElementById('integradosValue');
+const migracaoValue = document.getElementById('migracaoValue');
 
 function setExportButtonsEnabled(enabled) {
   exportPngButton.disabled = !enabled;
@@ -106,6 +114,40 @@ function updateVisibility() {
     gestaoGroup.classList.add('hidden');
     gestaoGroup.hidden = true;
   }
+}
+
+function updateEvMatrixVisibility() {
+  const selectedValue = existsEvMatrixRadios.find(radio => radio.checked)?.value;
+  const shouldShow = selectedValue === 'Sim';
+  evUploadSection.classList.toggle('hidden', !shouldShow);
+
+  if (!shouldShow) {
+    fileUpload.value = '';
+    extractedData.classList.add('hidden');
+    clearEvFields();
+  }
+}
+
+function clearEvFields() {
+  customizacaoValue.value = '';
+  integradosValue.value = '';
+  migracaoValue.value = '';
+}
+
+function fillEvFields(data) {
+  if (!data || !data.evValues) {
+    clearEvFields();
+    return;
+  }
+
+  const { customizacao, integrados, migracao } = data.evValues;
+  customizacaoValue.value = customizacao ?? '';
+  integradosValue.value = integrados ?? '';
+  migracaoValue.value = migracao ?? '';
+
+  possuiCustomizacao.checked = customizacao > 3;
+  possuiIntegracao.checked = integrados > 3;
+  possuiLegado.checked = migracao > 4;
 }
 
 function mapProfile(values) {
@@ -311,14 +353,354 @@ function resetForm() {
   setExportButtonsEnabled(false);
 }
 
+async function extractPdfData() {
+  if (!fileUpload.files || !fileUpload.files[0]) {
+    alert('Selecione um arquivo PDF primeiro.');
+    return;
+  }
+
+  try {
+    const file = fileUpload.files[0];
+    const arrayBuffer = await file.arrayBuffer();
+    
+    // Configurar pdf.js
+    if (typeof pdfjsLib === 'undefined') {
+      alert('Biblioteca PDF.js não está disponível.');
+      return;
+    }
+    
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+    
+    const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+    let fullText = '';
+    
+    // Extrair texto de todas as páginas
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const textContent = await page.getTextContent();
+      const pageText = textContent.items.map(item => item.str).join(' ');
+      fullText += pageText + '\n';
+    }
+    
+    // Processar o texto para extrair estrutura
+    const extractedContent = parseComplexityData(fullText);
+    
+    console.log('Texto extraído do PDF (primeiros 500 chars):', fullText.substring(0, 500));
+    console.log('Dados parseados:', extractedContent);
+    
+    fillEvFields(extractedContent);
+    extractedData.classList.add('hidden');
+    
+  } catch (error) {
+    alert('Erro ao processar PDF: ' + (error.message || error));
+    console.error(error);
+  }
+}
+
+function parseComplexityData(text) {
+  const rawText = text.replace(/\r\n?/g, '\n').replace(/\t/g, ' ');
+  const normalizedText = rawText
+    .replace(/\n{2,}/g, '\n')
+    .replace(/[ ]{2,}/g, ' ')
+    .replace(/ \n/g, '\n')
+    .replace(/\n /g, '\n')
+    .trim();
+  const singleLineText = normalizedText.replace(/\n+/g, ' ');
+
+  const lines = normalizedText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  if (lines.length === 0) return null;
+
+  const data = {
+    title: '',
+    evaluator: '',
+    complexityLevel: '',
+    totalScore: 0,
+    implications: '',
+    sections: [],
+    evValues: {
+      customizacao: null,
+      integrados: null,
+      migracao: null
+    }
+  };
+
+  // Título e avaliador via texto contínuo
+  const titleEvalMatch = singleLineText.match(/RESULTADO(?: DA AVALIAÇÃO)?\s*[:\-–]?\s*([^\d]+?)\s+por\s+([A-ZÁÉÍÓÚ][^\d]+?)(?=\s+(BAIXA|MÉDIA|ALTA|EXTREMA)|\s+\d+\s+pontos|$)/i);
+  if (titleEvalMatch) {
+    data.title = titleEvalMatch[1].trim();
+    data.evaluator = titleEvalMatch[2].trim();
+  }
+
+  // Título fallback a partir da linha após RESULTADO
+  if (!data.title) {
+    const resultadoLine = lines.findIndex(line => line.toUpperCase().includes('RESULTADO'));
+    if (resultadoLine >= 0 && resultadoLine + 1 < lines.length) {
+      const candidate = lines[resultadoLine + 1];
+      if (!candidate.toLowerCase().startsWith('por ')) {
+        data.title = candidate;
+      }
+    }
+  }
+
+  // Avaliador fallback se não identificado no bloco contínuo
+  if (!data.evaluator) {
+    const evaluatorMatch = singleLineText.match(/\bpor\s+([A-ZÁÉÍÓÚ][^\d]+?)(?=\s+(BAIXA|MÉDIA|ALTA|EXTREMA)|\s+\d+\s+pontos|$)/i);
+    if (evaluatorMatch) {
+      data.evaluator = evaluatorMatch[1].trim();
+    }
+  }
+
+  // Nível de complexidade
+  const levelMatch = singleLineText.match(/\b(BAIXA|MÉDIA|ALTA|EXTREMA)\b/i);
+  if (levelMatch) {
+    data.complexityLevel = levelMatch[1].toUpperCase();
+  }
+
+  // Pontuação total
+  const scoreMatch = singleLineText.match(/(\d{1,3})\s+pontos/i);
+  if (scoreMatch) {
+    data.totalScore = parseInt(scoreMatch[1], 10);
+  }
+
+  // Implicações / risco
+  const implicationsMatch = singleLineText.match(/IMPLICA(?:Ç(?:O|ÕES)|ÇÕES)(?:\s*[\/\-:]\s*RISCO)?\s*[:\-–]?\s*(.+?)(?=(?:\d\.\s+[A-ZÁÉÍÓÚ])|(?:\b[A-E]\.\s)|$)/i);
+  if (implicationsMatch) {
+    data.implications = implicationsMatch[1].trim();
+  } else {
+    const riskIndex = lines.findIndex(line => /IMPLICA(?:Ç(?:O|ÕES)|ÇÕES)|RISCO/i.test(line));
+    if (riskIndex >= 0 && riskIndex + 1 < lines.length) {
+      data.implications = lines[riskIndex + 1];
+    }
+  }
+
+  const sectionRegex = /(?<number>\d+)\.\s+(?<title>[A-ZÁÉÍÓÚ][A-ZÁÉÍÓÚÇÉÁÃÕÔÜÍÚ0-9\s\/\-\(\)]*?)(?:\s+(?<points>\d{1,3})\s*pts?)?(?=\s+[A-E]\.\s|\s+\d+\.\s|$)/g;
+  const sectionMatches = [];
+
+  let sectionMatch;
+  while ((sectionMatch = sectionRegex.exec(singleLineText)) !== null) {
+    sectionMatches.push({
+      index: sectionMatch.index,
+      end: sectionRegex.lastIndex,
+      title: sectionMatch.groups.title.trim(),
+      points: sectionMatch.groups.points ? parseInt(sectionMatch.groups.points, 10) : 0
+    });
+  }
+
+  for (let i = 0; i < sectionMatches.length; i++) {
+    const section = sectionMatches[i];
+    const nextSection = sectionMatches[i + 1];
+    const sectionBody = singleLineText.slice(section.end, nextSection ? nextSection.index : singleLineText.length).trim();
+
+    const items = [];
+    const itemRegex = /([A-E])\.\s+(.+?)\s+(\d+\s*[×xX]\s*\d+)\s+([A-ZÁÉÍÓÚ]+)\s+(\d{1,3})/g;
+    let itemMatch;
+    while ((itemMatch = itemRegex.exec(sectionBody)) !== null) {
+      items.push({
+        label: `${itemMatch[1]}.`,
+        description: itemMatch[2].trim(),
+        calculation: itemMatch[3].trim(),
+        level: itemMatch[4].trim(),
+        score: parseInt(itemMatch[5], 10)
+      });
+    }
+
+    data.sections.push({
+      title: section.title,
+      points: section.points,
+      items
+    });
+  }
+
+  // Caso não encontre seções, tente extrair itens globalmente
+  if (data.sections.length === 0) {
+    const globalItems = [];
+    const itemRegex = /([A-E])\.\s+(.+?)\s+(\d+\s*[×xX]\s*\d+)\s+([A-ZÁÉÍÓÚ]+)\s+(\d{1,3})/g;
+    let itemMatch;
+    while ((itemMatch = itemRegex.exec(singleLineText)) !== null) {
+      globalItems.push({
+        label: `${itemMatch[1]}.`,
+        description: itemMatch[2].trim(),
+        calculation: itemMatch[3].trim(),
+        level: itemMatch[4].trim(),
+        score: parseInt(itemMatch[5], 10)
+      });
+    }
+    if (globalItems.length > 0) {
+      data.sections.push({
+        title: 'Itens extraídos',
+        points: 0,
+        items: globalItems
+      });
+    }
+  }
+
+  const evValues = {
+    customizacao: null,
+    integrados: null,
+    migracao: null
+  };
+
+  const normalizeText = str => (str || '').toUpperCase().replace(/\s+/g, ' ').trim();
+  const allItems = data.sections.flatMap(section => section.items || []);
+
+  for (const item of allItems) {
+    const label = (item.label || '').toUpperCase();
+    const description = normalizeText(item.description);
+    const score = typeof item.score === 'number' ? item.score : null;
+
+    if (score !== null) {
+      if (label.startsWith('B.') || description.includes('GRAU DE CUSTOMIZAÇÃO') || description.includes('CUSTOMIZAÇÃO')) {
+        evValues.customizacao = score;
+      }
+      if (label.startsWith('A.') || description.includes('NÚMERO DE SISTEMAS INTEGRADOS') || description.includes('SISTEMAS INTEGRADOS')) {
+        evValues.integrados = score;
+      }
+      if (label.startsWith('E.') || description.includes('MIGRAÇÃO DE DADOS') || description.includes('VOLUME/QUALIDADE') || description.includes('VOLUME/QUANTIDADE')) {
+        evValues.migracao = score;
+      }
+    }
+  }
+
+  // Fallback global scan em caso de parsing parcial
+  const globalRegex = /([A-E])\.\s*([^\d]+?)\s+\d+\s*[×xX]\s*\d+\s+[A-ZÁÉÍÓÚ]+\s+(\d{1,3})/g;
+  let fallbackMatch;
+  while ((fallbackMatch = globalRegex.exec(singleLineText)) !== null) {
+    const label = fallbackMatch[1].toUpperCase();
+    const description = normalizeText(fallbackMatch[2]);
+    const score = parseInt(fallbackMatch[3], 10);
+
+    if (!evValues.customizacao && (label === 'B' || description.includes('GRAU DE CUSTOMIZAÇÃO') || description.includes('CUSTOMIZAÇÃO'))) {
+      evValues.customizacao = score;
+    }
+    if (!evValues.integrados && (label === 'A' || description.includes('NÚMERO DE SISTEMAS INTEGRADOS') || description.includes('SISTEMAS INTEGRADOS'))) {
+      evValues.integrados = score;
+    }
+    if (!evValues.migracao && (label === 'E' || description.includes('MIGRAÇÃO DE DADOS') || description.includes('VOLUME/QUALIDADE') || description.includes('VOLUME/QUANTIDADE'))) {
+      evValues.migracao = score;
+    }
+  }
+
+  data.evValues = evValues;
+
+  const hasValidData = data.title || data.sections.length > 0 || data.totalScore > 0 || data.complexityLevel;
+  console.log('Validação final - hasValidData:', hasValidData);
+  console.log('  title:', !!data.title, '|', data.title);
+  console.log('  sections:', data.sections.length);
+  console.log('  totalScore:', data.totalScore);
+  console.log('  complexityLevel:', data.complexityLevel);
+
+  return hasValidData ? data : null;
+}
+
+function displayExtractedData(data) {
+  const hasData = data && (data.title || data.evaluator || data.complexityLevel || data.totalScore > 0 || data.implications || data.sections.length > 0);
+  if (!hasData) {
+    extractedData.innerHTML = '<p>Nenhum dado válido foi extraído do documento.</p>';
+    extractedData.classList.remove('hidden');
+    return;
+  }
+  
+  let html = '<div class="complexity-scorecard">';
+  
+  // Cabeçalho
+  if (data.title) {
+    html += `<h2>${escapeHtml(data.title)}</h2>`;
+  }
+  if (data.evaluator) {
+    html += `<p class="evaluator">por ${escapeHtml(data.evaluator)}</p>`;
+  }
+  
+  // Nível de complexidade em destaque
+  if (data.complexityLevel) {
+    html += `<div class="complexity-level">
+      <div class="level-label">NÍVEL DE COMPLEXIDADE</div>
+      <div class="level-badge ${data.complexityLevel.toLowerCase()}">${escapeHtml(data.complexityLevel)}</div>
+    </div>`;
+  }
+  
+  // Pontuação total
+  if (data.totalScore > 0) {
+    html += `<p class="total-score">Pontuação total: <strong>${data.totalScore}</strong> pontos</p>`;
+  }
+  
+  // Implicações/Risco
+  if (data.implications) {
+    html += `<div class="implications">
+      <h3>IMPLICAÇÕES / RISCO</h3>
+      <p>${escapeHtml(data.implications)}</p>
+    </div>`;
+  }
+  
+  // Seções com itens
+  if (data.sections.length > 0) {
+    html += '<div class="sections">';
+    
+    for (const section of data.sections) {
+      html += `<div class="section">
+        <div class="section-header">
+          <h3>${escapeHtml(section.title)}</h3>
+          ${section.points > 0 ? `<span class="section-points">${section.points} pts</span>` : ''}
+        </div>`;
+      
+      if (section.items.length > 0) {
+        html += '<div class="items">';
+        for (const item of section.items) {
+          html += `<div class="item">
+            <div class="item-label">${escapeHtml(item.label)}</div>`;
+          
+          if (item.description) {
+            html += `<div class="item-description">${escapeHtml(item.description)}</div>`;
+          }
+          
+          html += `<div class="item-footer">`;
+          if (item.calculation) {
+            html += `<span class="calculation">${escapeHtml(item.calculation)}</span>`;
+          }
+          if (item.level) {
+            html += `<span class="level ${item.level.toLowerCase()}">${escapeHtml(item.level)}</span>`;
+          }
+          if (item.score > 0) {
+            html += `<span class="score">${item.score}</span>`;
+          }
+          html += `</div></div>`;
+        }
+        html += '</div>';
+      }
+      
+      html += '</div>';
+    }
+    
+    html += '</div>';
+  }
+  
+  html += '</div>';
+  
+  extractedData.innerHTML = html;
+  extractedData.classList.remove('hidden');
+}
+
+function escapeHtml(text) {
+  const map = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+  return text.replace(/[&<>"']/g, m => map[m]);
+}
+
 tipoServico.addEventListener('change', updateVisibility);
 generateButton.addEventListener('click', generateMatriz);
 resetButton.addEventListener('click', resetForm);
 exportPngButton.addEventListener('click', exportAsPng);
 exportPdfButton.addEventListener('click', exportAsPdf);
+extractButton.addEventListener('click', extractPdfData);
+existsEvMatrixRadios.forEach(radio => radio.addEventListener('change', updateEvMatrixVisibility));
 
 const initializePage = () => {
   updateVisibility();
+  updateEvMatrixVisibility();
   setExportButtonsEnabled(false);
 };
 
