@@ -141,13 +141,40 @@ function fillEvFields(data) {
   }
 
   const { customizacao, integrados, migracao } = data.evValues;
-  customizacaoValue.value = customizacao ?? '';
-  integradosValue.value = integrados ?? '';
-  migracaoValue.value = migracao ?? '';
+  console.log('fillEvFields - raw extracted values:', { customizacao, integrados, migracao });
+  const mapCustomizacaoLabel = (score) => {
+    if (score == null) return '';
+    const n = Number(score);
+    if (isNaN(n)) return '';
+    if (n >= 10) return 'Extremo';
+    if (n >= 7) return 'Alto';
+    if (n >= 4) return 'Moderado';
+    return 'Baixo';
+  };
 
-  possuiCustomizacao.checked = customizacao > 3;
-  possuiIntegracao.checked = integrados > 3;
-  possuiLegado.checked = migracao > 4;
+  const mapIntegradosMigracaoLabel = (score) => {
+    if (score == null) return '';
+    const n = Number(score);
+    if (isNaN(n)) return '';
+    if (n >= 13) return 'Extremo';
+    if (n >= 9) return 'Alto';
+    if (n >= 5) return 'Moderado';
+    return 'Baixo';
+  };
+
+  const labelCustom = mapCustomizacaoLabel(customizacao);
+  const labelIntegrados = mapIntegradosMigracaoLabel(integrados);
+  const labelMigracao = mapIntegradosMigracaoLabel(migracao);
+
+  console.log('fillEvFields - mapped labels:', { labelCustom, labelIntegrados, labelMigracao });
+
+  customizacaoValue.value = labelCustom;
+  integradosValue.value = labelIntegrados;
+  migracaoValue.value = labelMigracao;
+
+  possuiCustomizacao.checked = !!labelCustom && labelCustom !== 'Baixo';
+  possuiIntegracao.checked = !!labelIntegrados && labelIntegrados !== 'Baixo';
+  possuiLegado.checked = !!labelMigracao && labelMigracao !== 'Baixo';
 }
 
 function mapProfile(values) {
@@ -349,6 +376,7 @@ function resetForm() {
   possuiIntegracao.checked = false;
   possuiLegado.checked = false;
   possuiCustomizacao.checked = false;
+  clearEvFields();
   updateVisibility();
   setExportButtonsEnabled(false);
 }
@@ -541,46 +569,31 @@ function parseComplexityData(text) {
   };
 
   const normalizeText = str => (str || '').toUpperCase().replace(/\s+/g, ' ').trim();
-  const allItems = data.sections.flatMap(section => section.items || []);
 
-  for (const item of allItems) {
-    const label = (item.label || '').toUpperCase();
-    const description = normalizeText(item.description);
-    const score = typeof item.score === 'number' ? item.score : null;
+  const findSectionScore = (sectionRegex) => {
+    const sectionMatch = normalizedText.match(sectionRegex);
+    if (!sectionMatch) return null;
+    const sectionText = sectionMatch[0];
 
-    if (score !== null) {
-      if (label.startsWith('B.') || description.includes('GRAU DE CUSTOMIZAÇÃO') || description.includes('CUSTOMIZAÇÃO')) {
-        evValues.customizacao = score;
-      }
-      if (label.startsWith('A.') || description.includes('NÚMERO DE SISTEMAS INTEGRADOS') || description.includes('SISTEMAS INTEGRADOS')) {
-        evValues.integrados = score;
-      }
-      if (label.startsWith('E.') || description.includes('MIGRAÇÃO DE DADOS') || description.includes('VOLUME/QUALIDADE') || description.includes('VOLUME/QUANTIDADE')) {
-        evValues.migracao = score;
-      }
+    const scorePattern = /\d+\s*[×xX]\s*\d+\s+[A-ZÁÉÍÓÚ]+\s+(\d{1,3})\b/;
+    const scoreMatch = sectionText.match(scorePattern);
+    if (scoreMatch) {
+      return parseInt(scoreMatch[1], 10);
     }
-  }
 
-  // Fallback global scan em caso de parsing parcial
-  const globalRegex = /([A-E])\.\s*([^\d]+?)\s+\d+\s*[×xX]\s*\d+\s+[A-ZÁÉÍÓÚ]+\s+(\d{1,3})/g;
-  let fallbackMatch;
-  while ((fallbackMatch = globalRegex.exec(singleLineText)) !== null) {
-    const label = fallbackMatch[1].toUpperCase();
-    const description = normalizeText(fallbackMatch[2]);
-    const score = parseInt(fallbackMatch[3], 10);
+    const numbers = Array.from(sectionText.matchAll(/(\d{1,3})\b/g), m => parseInt(m[1], 10)).filter(n => !Number.isNaN(n));
+    return numbers.length ? numbers[numbers.length - 1] : null;
+  };
 
-    if (!evValues.customizacao && (label === 'B' || description.includes('GRAU DE CUSTOMIZAÇÃO') || description.includes('CUSTOMIZAÇÃO'))) {
-      evValues.customizacao = score;
-    }
-    if (!evValues.integrados && (label === 'A' || description.includes('NÚMERO DE SISTEMAS INTEGRADOS') || description.includes('SISTEMAS INTEGRADOS'))) {
-      evValues.integrados = score;
-    }
-    if (!evValues.migracao && (label === 'E' || description.includes('MIGRAÇÃO DE DADOS') || description.includes('VOLUME/QUALIDADE') || description.includes('VOLUME/QUANTIDADE'))) {
-      evValues.migracao = score;
-    }
-  }
+  evValues.customizacao = findSectionScore(/B\.\s*GRAU DE CUSTOMIZAÇÃO[\s\S]*?(?=(?:[A-E]\.\s*[A-ZÁÉÍÓÚ]|$))/i);
+  evValues.integrados = findSectionScore(/C\.\s*QUANTIDADE DE PROCESSOS INTEGRADOS[\s\S]*?(?=(?:[A-E]\.\s*[A-ZÁÉÍÓÚ]|$))/i);
+  evValues.migracao = findSectionScore(/E\.\s*MIGRAÇÃO DE DADOS\s*\(VOLUME\/QUALIDADE\)[\s\S]*?(?=(?:[A-E]\.\s*[A-ZÁÉÍÓÚ]|$))/i);
+
+  console.log('parseComplexityData - section-only evValues:', evValues);
 
   data.evValues = evValues;
+
+  console.log('parseComplexityData - evValues:', evValues);
 
   const hasValidData = data.title || data.sections.length > 0 || data.totalScore > 0 || data.complexityLevel;
   console.log('Validação final - hasValidData:', hasValidData);
